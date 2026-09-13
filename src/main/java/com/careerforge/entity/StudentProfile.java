@@ -1,7 +1,8 @@
 package com.careerforge.entity;
 
 import jakarta.persistence.*;
-
+import java.util.ArrayList;
+import java.util.List;
 @Entity
 @Table(name = "student_profiles")
 public class StudentProfile {
@@ -13,7 +14,12 @@ public class StudentProfile {
     private String phone;
 
     private String college;
-
+    @OneToMany(
+            mappedBy = "profile",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<StudentSkill> skills = new ArrayList<>();
     private String degree;
 
     private String branch;
@@ -30,7 +36,13 @@ public class StudentProfile {
 
     public StudentProfile() {
     }
+    public List<StudentSkill> getSkills() {
+        return skills;
+    }
 
+    public void setSkills(List<StudentSkill> skills) {
+        this.skills = skills;
+    }
     public Long getId() {
         return id;
     }
