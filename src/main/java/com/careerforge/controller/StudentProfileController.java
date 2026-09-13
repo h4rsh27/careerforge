@@ -35,4 +35,16 @@ public class StudentProfileController {
                 request
         );
     }
+    // =========================
+// GET STUDENT PROFILE
+// =========================
+
+    @GetMapping
+    public StudentProfileResponse getProfile(
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return studentProfileService.getProfile(email);
+    }
 }

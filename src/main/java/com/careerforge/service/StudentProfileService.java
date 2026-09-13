@@ -72,4 +72,34 @@ public class StudentProfileService {
                 savedProfile.getBio()
         );
     }
+    // =========================
+// GET STUDENT PROFILE
+// =========================
+
+    public StudentProfileResponse getProfile(String email) {
+
+        // Find logged-in user
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        // Find profile belonging to this user
+        StudentProfile profile =
+                studentProfileRepository.findByUser(user)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Student profile not found"));
+
+        // Convert Entity → Response DTO
+        return new StudentProfileResponse(
+                profile.getId(),
+                profile.getPhone(),
+                profile.getCollege(),
+                profile.getDegree(),
+                profile.getBranch(),
+                profile.getGraduationYear(),
+                profile.getLocation(),
+                profile.getBio()
+        );
+    }
 }
