@@ -4,6 +4,7 @@ import com.careerforge.dto.StudentProfileRequest;
 import com.careerforge.dto.StudentProfileResponse;
 import com.careerforge.service.StudentProfileService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,9 +36,10 @@ public class StudentProfileController {
                 request
         );
     }
+
     // =========================
-// GET STUDENT PROFILE
-// =========================
+    // GET STUDENT PROFILE
+    // =========================
 
     @GetMapping
     public StudentProfileResponse getProfile(
@@ -46,5 +48,36 @@ public class StudentProfileController {
         String email = authentication.getName();
 
         return studentProfileService.getProfile(email);
+    }
+
+    // =========================
+    // UPDATE STUDENT PROFILE
+    // =========================
+
+    @PutMapping
+    public StudentProfileResponse updateProfile(
+            @Valid @RequestBody StudentProfileRequest request,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return studentProfileService.updateProfile(
+                email,
+                request
+        );
+    }
+
+    // =========================
+    // DELETE STUDENT PROFILE
+    // =========================
+
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProfile(
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        studentProfileService.deleteProfile(email);
     }
 }
