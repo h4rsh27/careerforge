@@ -1,7 +1,9 @@
 package com.careerforge.controller;
 
+import com.careerforge.dto.ExtractedSkillResponse;
 import com.careerforge.dto.ResumeResponse;
 import com.careerforge.service.ResumeService;
+import com.careerforge.service.ResumeSkillExtractionService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,14 +18,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class ResumeController {
 
     private final ResumeService resumeService;
+    private final ResumeSkillExtractionService resumeSkillExtractionService;
 
-    public ResumeController(ResumeService resumeService) {
+    public ResumeController(
+            ResumeService resumeService,
+            ResumeSkillExtractionService resumeSkillExtractionService) {
+
         this.resumeService = resumeService;
+        this.resumeSkillExtractionService =
+                resumeSkillExtractionService;
     }
-
-    // =========================
-    // UPLOAD / REPLACE RESUME
-    // =========================
 
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
@@ -40,10 +44,6 @@ public class ResumeController {
         );
     }
 
-    // =========================
-    // GET RESUME METADATA
-    // =========================
-
     @GetMapping
     public ResumeResponse getResume(
             Authentication authentication) {
@@ -52,10 +52,6 @@ public class ResumeController {
 
         return resumeService.getResume(email);
     }
-
-    // =========================
-    // DOWNLOAD RESUME
-    // =========================
 
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadResume(
@@ -70,9 +66,7 @@ public class ResumeController {
                 resumeService.getResumeFileName(email);
 
         return ResponseEntity.ok()
-                .contentType(
-                        MediaType.APPLICATION_PDF
-                )
+                .contentType(MediaType.APPLICATION_PDF)
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" +
@@ -82,9 +76,16 @@ public class ResumeController {
                 .body(resource);
     }
 
-    // =========================
-    // DELETE RESUME
-    // =========================
+    @GetMapping("/skills")
+    public ExtractedSkillResponse extractSkills(
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return resumeSkillExtractionService.extractSkills(
+                email
+        );
+    }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)

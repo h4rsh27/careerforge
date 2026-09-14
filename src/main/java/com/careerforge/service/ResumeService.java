@@ -27,6 +27,7 @@ public class ResumeService {
     private final ResumeRepository resumeRepository;
     private final StudentProfileRepository studentProfileRepository;
     private final UserRepository userRepository;
+    private final ResumeTextExtractionService resumeTextExtractionService;
 
     private final Path uploadDirectory =
             Paths.get("uploads/resumes");
@@ -34,28 +35,26 @@ public class ResumeService {
     public ResumeService(
             ResumeRepository resumeRepository,
             StudentProfileRepository studentProfileRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            ResumeTextExtractionService resumeTextExtractionService) {
 
         this.resumeRepository = resumeRepository;
-        this.studentProfileRepository = studentProfileRepository;
+        this.studentProfileRepository =
+                studentProfileRepository;
         this.userRepository = userRepository;
+        this.resumeTextExtractionService =
+                resumeTextExtractionService;
     }
-
-    // =========================
-    // UPLOAD / REPLACE RESUME
-    // =========================
 
     public ResumeResponse uploadResume(
             String email,
             MultipartFile file) {
 
-        // 1. Check whether file exists
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException(
                     "Resume file is required");
         }
 
-        // 2. Check file type
         String contentType = file.getContentType();
 
         if (!"application/pdf".equalsIgnoreCase(contentType)) {
@@ -63,19 +62,16 @@ public class ResumeService {
                     "Only PDF resumes are allowed");
         }
 
-        // 3. Check file size
         if (file.getSize() > 5 * 1024 * 1024) {
             throw new IllegalArgumentException(
                     "Resume file size must not exceed 5 MB");
         }
 
-        // 4. Find logged-in user
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found"));
 
-        // 5. Find student's profile
         StudentProfile profile =
                 studentProfileRepository.findByUser(user)
                         .orElseThrow(() ->
@@ -83,11 +79,8 @@ public class ResumeService {
                                         "Student profile not found"));
 
         try {
-
-            // 6. Create upload directory if it doesn't exist
             Files.createDirectories(uploadDirectory);
 
-            // 7. Get original filename
             String originalFileName =
                     file.getOriginalFilename();
 
@@ -97,26 +90,28 @@ public class ResumeService {
                 originalFileName = "resume.pdf";
             }
 
-            // 8. Generate unique storage filename
             String uniqueFileName =
                     UUID.randomUUID() + ".pdf";
 
             Path newFilePath =
                     uploadDirectory.resolve(uniqueFileName);
 
-            // 9. Save the new PDF
             Files.copy(
                     file.getInputStream(),
                     newFilePath,
                     StandardCopyOption.REPLACE_EXISTING
             );
 
-            // 10. Check whether student already has a resume
+            // Extract text from uploaded PDF
+            String extractedText =
+                    resumeTextExtractionService.extractText(
+                            newFilePath
+                    );
+
             Resume resume =
                     resumeRepository.findByProfile(profile)
                             .orElse(new Resume());
 
-            // 11. Delete old physical file if replacing
             String oldStoragePath =
                     resume.getStoragePath();
 
@@ -128,19 +123,17 @@ public class ResumeService {
                 );
             }
 
-            // 12. Store new resume metadata
             resume.setFileName(originalFileName);
             resume.setFileType(contentType);
             resume.setFileSize(file.getSize());
             resume.setStoragePath(newFilePath.toString());
+            resume.setExtractedText(extractedText);
             resume.setUploadedAt(LocalDateTime.now());
             resume.setProfile(profile);
 
-            // 13. Save metadata in PostgreSQL
             Resume savedResume =
                     resumeRepository.save(resume);
 
-            // 14. Return safe response
             return mapToResponse(savedResume);
 
         } catch (IOException exception) {
@@ -149,10 +142,6 @@ public class ResumeService {
                     "Failed to store resume file");
         }
     }
-
-    // =========================
-    // GET RESUME METADATA
-    // =========================
 
     public ResumeResponse getResume(String email) {
 
@@ -167,10 +156,6 @@ public class ResumeService {
 
         return mapToResponse(resume);
     }
-
-    // =========================
-    // DOWNLOAD RESUME
-    // =========================
 
     public Resource downloadResume(String email) {
 
@@ -207,10 +192,6 @@ public class ResumeService {
         }
     }
 
-    // =========================
-    // GET ORIGINAL FILE NAME
-    // =========================
-
     public String getResumeFileName(String email) {
 
         StudentProfile profile =
@@ -224,10 +205,6 @@ public class ResumeService {
 
         return resume.getFileName();
     }
-
-    // =========================
-    // DELETE RESUME
-    // =========================
 
     public void deleteResume(String email) {
 
@@ -256,12 +233,7 @@ public class ResumeService {
         }
     }
 
-    // =========================
-    // FIND STUDENT PROFILE
-    // =========================
-
-    private StudentProfile getStudentProfile(
-            String email) {
+    private StudentProfile getStudentProfile(String email) {
 
         User user =
                 userRepository.findByEmail(email)
@@ -275,12 +247,7 @@ public class ResumeService {
                                 "Student profile not found"));
     }
 
-    // =========================
-    // ENTITY → DTO
-    // =========================
-
-    private ResumeResponse mapToResponse(
-            Resume resume) {
+    private ResumeResponse mapToResponse(Resume resume) {
 
         return new ResumeResponse(
                 resume.getId(),

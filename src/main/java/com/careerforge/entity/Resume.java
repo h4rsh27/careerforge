@@ -24,11 +24,18 @@ public class Resume {
     @Column(nullable = false)
     private String storagePath;
 
+    @Column(columnDefinition = "TEXT")
+    private String extractedText;
+
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
 
     @OneToOne
-    @JoinColumn(name = "profile_id", nullable = false, unique = true)
+    @JoinColumn(
+            name = "profile_id",
+            nullable = false,
+            unique = true
+    )
     private StudentProfile profile;
 
     public Resume() {
@@ -72,6 +79,14 @@ public class Resume {
 
     public void setStoragePath(String storagePath) {
         this.storagePath = storagePath;
+    }
+
+    public String getExtractedText() {
+        return extractedText;
+    }
+
+    public void setExtractedText(String extractedText) {
+        this.extractedText = extractedText;
     }
 
     public LocalDateTime getUploadedAt() {
