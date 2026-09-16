@@ -7,6 +7,7 @@ import com.careerforge.entity.JobApplication;
 import com.careerforge.entity.JobListing;
 import com.careerforge.entity.StudentProfile;
 import com.careerforge.entity.User;
+import com.careerforge.exception.ResourceNotFoundException;
 import com.careerforge.repository.JobApplicationRepository;
 import com.careerforge.repository.JobListingRepository;
 import com.careerforge.repository.StudentProfileRepository;
@@ -43,41 +44,51 @@ public class JobApplicationService {
 
         User user = getCurrentUser(authentication);
 
-        StudentProfile profile = profileRepository
-                .findByUser(user)
-                .orElseThrow(() ->
-                        new RuntimeException("Student profile not found"));
+        StudentProfile profile =
+                profileRepository.findByUser(user)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Student profile not found"));
 
-        JobListing jobListing = jobListingRepository
-                .findById(request.getJobListingId())
-                .orElseThrow(() ->
-                        new RuntimeException("Job listing not found"));
+        JobListing jobListing =
+                jobListingRepository
+                        .findById(request.getJobListingId())
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Job listing not found"));
 
-        if (applicationRepository.existsByProfileAndJobListing(
-                profile,
-                jobListing)) {
+        if (applicationRepository
+                .existsByProfileAndJobListing(
+                        profile,
+                        jobListing)) {
 
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "You have already saved this job");
         }
 
-        JobApplication application = new JobApplication();
+        JobApplication application =
+                new JobApplication();
 
         application.setProfile(profile);
         application.setJobListing(jobListing);
 
-        application.setStatus(
+        ApplicationStatus status =
                 request.getStatus() != null
                         ? request.getStatus()
-                        : ApplicationStatus.SAVED
-        );
+                        : ApplicationStatus.SAVED;
 
-        application.setAppliedAt(LocalDateTime.now());
-        application.setUpdatedAt(LocalDateTime.now());
+        application.setStatus(status);
 
-        return mapToResponse(
-                applicationRepository.save(application)
-        );
+        LocalDateTime now =
+                LocalDateTime.now();
+
+        application.setAppliedAt(now);
+        application.setUpdatedAt(now);
+
+        JobApplication savedApplication =
+                applicationRepository.save(application);
+
+        return mapToResponse(savedApplication);
     }
 
     public List<JobApplicationResponse> getMyApplications(
@@ -85,10 +96,11 @@ public class JobApplicationService {
 
         User user = getCurrentUser(authentication);
 
-        StudentProfile profile = profileRepository
-                .findByUser(user)
-                .orElseThrow(() ->
-                        new RuntimeException("Student profile not found"));
+        StudentProfile profile =
+                profileRepository.findByUser(user)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Student profile not found"));
 
         return applicationRepository
                 .findByProfile(profile)
@@ -102,24 +114,38 @@ public class JobApplicationService {
             ApplicationStatus status,
             Authentication authentication) {
 
+        if (status == null) {
+            throw new IllegalArgumentException(
+                    "Application status is required");
+        }
+
         User user = getCurrentUser(authentication);
 
-        StudentProfile profile = profileRepository
-                .findByUser(user)
-                .orElseThrow(() ->
-                        new RuntimeException("Student profile not found"));
+        StudentProfile profile =
+                profileRepository.findByUser(user)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Student profile not found"));
 
-        JobApplication application = applicationRepository
-                .findByIdAndProfile(applicationId, profile)
-                .orElseThrow(() ->
-                        new RuntimeException("Application not found"));
+        JobApplication application =
+                applicationRepository
+                        .findByIdAndProfile(
+                                applicationId,
+                                profile
+                        )
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Application not found"));
 
         application.setStatus(status);
-        application.setUpdatedAt(LocalDateTime.now());
-
-        return mapToResponse(
-                applicationRepository.save(application)
+        application.setUpdatedAt(
+                LocalDateTime.now()
         );
+
+        JobApplication savedApplication =
+                applicationRepository.save(application);
+
+        return mapToResponse(savedApplication);
     }
 
     public void deleteApplication(
@@ -128,31 +154,40 @@ public class JobApplicationService {
 
         User user = getCurrentUser(authentication);
 
-        StudentProfile profile = profileRepository
-                .findByUser(user)
-                .orElseThrow(() ->
-                        new RuntimeException("Student profile not found"));
+        StudentProfile profile =
+                profileRepository.findByUser(user)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Student profile not found"));
 
-        JobApplication application = applicationRepository
-                .findByIdAndProfile(applicationId, profile)
-                .orElseThrow(() ->
-                        new RuntimeException("Application not found"));
+        JobApplication application =
+                applicationRepository
+                        .findByIdAndProfile(
+                                applicationId,
+                                profile
+                        )
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Application not found"));
 
         applicationRepository.delete(application);
     }
 
-    private User getCurrentUser(Authentication authentication) {
+    private User getCurrentUser(
+            Authentication authentication) {
 
         return userRepository
                 .findByEmail(authentication.getName())
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException(
+                                "User not found"));
     }
 
     private JobApplicationResponse mapToResponse(
             JobApplication application) {
 
-        JobListing job = application.getJobListing();
+        JobListing job =
+                application.getJobListing();
 
         return new JobApplicationResponse(
                 application.getId(),

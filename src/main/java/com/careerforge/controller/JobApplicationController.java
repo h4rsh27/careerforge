@@ -5,6 +5,7 @@ import com.careerforge.dto.JobApplicationResponse;
 import com.careerforge.entity.ApplicationStatus;
 import com.careerforge.service.JobApplicationService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +29,14 @@ public class JobApplicationController {
             @Valid @RequestBody JobApplicationRequest request,
             Authentication authentication) {
 
-        return ResponseEntity.ok(
-                applicationService.createApplication(
-                        request,
-                        authentication
-                )
-        );
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                        applicationService.createApplication(
+                                request,
+                                authentication
+                        )
+                );
     }
 
     @GetMapping
@@ -41,7 +44,9 @@ public class JobApplicationController {
             Authentication authentication) {
 
         return ResponseEntity.ok(
-                applicationService.getMyApplications(authentication)
+                applicationService.getMyApplications(
+                        authentication
+                )
         );
     }
 

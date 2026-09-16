@@ -4,6 +4,7 @@ import com.careerforge.dto.ApplicationAnalyticsResponse;
 import com.careerforge.entity.ApplicationStatus;
 import com.careerforge.entity.StudentProfile;
 import com.careerforge.entity.User;
+import com.careerforge.exception.ResourceNotFoundException;
 import com.careerforge.repository.JobApplicationRepository;
 import com.careerforge.repository.StudentProfileRepository;
 import com.careerforge.repository.UserRepository;
@@ -33,12 +34,14 @@ public class ApplicationAnalyticsService {
         User user = userRepository
                 .findByEmail(authentication.getName())
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new ResourceNotFoundException(
+                                "User not found"));
 
         StudentProfile profile = profileRepository
                 .findByUser(user)
                 .orElseThrow(() ->
-                        new RuntimeException("Student profile not found"));
+                        new ResourceNotFoundException(
+                                "Student profile not found"));
 
         long saved =
                 applicationRepository
