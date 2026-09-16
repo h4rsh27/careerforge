@@ -1,6 +1,7 @@
 package com.careerforge.service;
 
 import com.careerforge.dto.ResumeResponse;
+import com.careerforge.dto.ResumeTextResponse;
 import com.careerforge.entity.Resume;
 import com.careerforge.entity.StudentProfile;
 import com.careerforge.entity.User;
@@ -155,6 +156,27 @@ public class ResumeService {
                                         "Resume not found"));
 
         return mapToResponse(resume);
+    }
+
+    /*
+     * Returns the text extracted from the student's resume.
+     */
+    public ResumeTextResponse getResumeText(String email) {
+
+        StudentProfile profile =
+                getStudentProfile(email);
+
+        Resume resume =
+                resumeRepository.findByProfile(profile)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Resume not found"));
+
+        return new ResumeTextResponse(
+                resume.getId(),
+                resume.getFileName(),
+                resume.getExtractedText()
+        );
     }
 
     public Resource downloadResume(String email) {

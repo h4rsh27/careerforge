@@ -6,7 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "job_roles")
+@Table(
+        name = "job_roles",
+        indexes = {
+                @Index(name = "idx_job_role_name", columnList = "role_name")
+        }
+)
 public class JobRole {
 
     @Id

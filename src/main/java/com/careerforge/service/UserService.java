@@ -1,5 +1,6 @@
 package com.careerforge.service;
 
+import com.careerforge.dto.AuthUserResponse;
 import com.careerforge.dto.LoginRequest;
 import com.careerforge.dto.LoginResponse;
 import com.careerforge.dto.UserRequest;
@@ -30,7 +31,7 @@ public class UserService {
         this.jwtService = jwtService;
     }
 
-    // =========================a
+    // =========================
     // REGISTER USER
     // =========================
 
@@ -51,7 +52,7 @@ public class UserService {
                 passwordEncoder.encode(request.getPassword())
         );
 
-        // Every newly registered user is a student
+        // Public registration always creates STUDENT
         user.setRole("STUDENT");
 
         User savedUser = userRepository.save(user);
@@ -97,9 +98,18 @@ public class UserService {
                         user.getRole()
                 );
 
+        AuthUserResponse userResponse =
+                new AuthUserResponse(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getRole()
+                );
+
         return new LoginResponse(
                 "Login successful",
-                token
+                token,
+                userResponse
         );
     }
 

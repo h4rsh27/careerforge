@@ -2,6 +2,7 @@ package com.careerforge.controller;
 
 import com.careerforge.dto.ExtractedSkillResponse;
 import com.careerforge.dto.ResumeResponse;
+import com.careerforge.dto.ResumeTextResponse;
 import com.careerforge.service.ResumeService;
 import com.careerforge.service.ResumeSkillExtractionService;
 import org.springframework.core.io.Resource;
@@ -95,5 +96,15 @@ public class ResumeController {
         String email = authentication.getName();
 
         resumeService.deleteResume(email);
+    }
+    @GetMapping("/text")
+    public ResponseEntity<ResumeTextResponse> getResumeText(
+            Authentication authentication) {
+
+        return ResponseEntity.ok(
+                resumeService.getResumeText(
+                        authentication.getName()
+                )
+        );
     }
 }

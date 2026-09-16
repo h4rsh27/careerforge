@@ -3,8 +3,15 @@ package com.careerforge.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "student_skills")
-public class StudentSkill {
+@Table(
+        name = "student_skills",
+        indexes = {
+                @Index(
+                        name = "idx_student_skill_profile",
+                        columnList = "profile_id"
+                )
+        }
+)public class StudentSkill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
