@@ -7,6 +7,7 @@ import com.careerforge.dto.InterviewSessionResponse;
 import com.careerforge.service.InterviewService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,30 +28,47 @@ public class InterviewController {
     @PostMapping("/start/{jobRoleId}")
     @ResponseStatus(HttpStatus.CREATED)
     public InterviewSessionResponse startInterview(
-            @PathVariable Long jobRoleId) {
+            @PathVariable Long jobRoleId,
+            Authentication authentication) {
 
         return interviewService.startInterview(
+                authentication.getName(),
                 jobRoleId
         );
     }
 
     @GetMapping("/{sessionId}/questions")
     public List<InterviewQuestionResponse> getQuestions(
-            @PathVariable Long sessionId) {
+            @PathVariable Long sessionId,
+            Authentication authentication) {
 
         return interviewService.getQuestions(
-                sessionId
+                sessionId,
+                authentication.getName()
         );
     }
 
     @PostMapping("/questions/{questionId}/answer")
     public InterviewResultResponse submitAnswer(
             @PathVariable Long questionId,
-            @Valid @RequestBody AnswerRequest request) {
+            @Valid @RequestBody AnswerRequest request,
+            Authentication authentication) {
 
         return interviewService.submitAnswer(
                 questionId,
-                request
+                request,
+                authentication.getName()
+        );
+    }
+
+    @PutMapping("/{sessionId}/complete")
+    public InterviewSessionResponse completeInterview(
+            @PathVariable Long sessionId,
+            Authentication authentication) {
+
+        return interviewService.completeInterview(
+                sessionId,
+                authentication.getName()
         );
     }
 }

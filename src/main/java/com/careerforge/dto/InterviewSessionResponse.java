@@ -14,6 +14,8 @@ public class InterviewSessionResponse {
 
     private LocalDateTime startedAt;
 
+    private LocalDateTime completedAt;
+
     public InterviewSessionResponse() {
     }
 
@@ -22,13 +24,15 @@ public class InterviewSessionResponse {
             Long jobRoleId,
             String jobRole,
             String status,
-            LocalDateTime startedAt) {
+            LocalDateTime startedAt,
+            LocalDateTime completedAt) {
 
         this.sessionId = sessionId;
         this.jobRoleId = jobRoleId;
         this.jobRole = jobRole;
         this.status = status;
         this.startedAt = startedAt;
+        this.completedAt = completedAt;
     }
 
     public Long getSessionId() {
@@ -69,5 +73,13 @@ public class InterviewSessionResponse {
 
     public void setStartedAt(LocalDateTime startedAt) {
         this.startedAt = startedAt;
+    }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(LocalDateTime completedAt) {
+        this.completedAt = completedAt;
     }
 }

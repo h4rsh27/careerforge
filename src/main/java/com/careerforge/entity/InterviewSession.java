@@ -28,6 +28,12 @@ public class InterviewSession {
             nullable = false
     )
     private JobRole jobRole;
+    @ManyToOne
+    @JoinColumn(
+            name = "profile_id",
+            nullable = false
+    )
+    private StudentProfile profile;
 
     @OneToMany(
             mappedBy = "session",
@@ -87,5 +93,12 @@ public class InterviewSession {
     public void setQuestions(
             List<InterviewQuestion> questions) {
         this.questions = questions;
+    }
+    public StudentProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(StudentProfile profile) {
+        this.profile = profile;
     }
 }
