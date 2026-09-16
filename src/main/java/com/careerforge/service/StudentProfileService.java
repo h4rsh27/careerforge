@@ -89,8 +89,8 @@ public class StudentProfileService {
         StudentProfile profile =
                 studentProfileRepository.findByUser(user)
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Student profile not found"));
+                                new ResourceNotFoundException("Student profile not found")
+                        );
 
         // Convert Entity → Response DTO
         return new StudentProfileResponse(
