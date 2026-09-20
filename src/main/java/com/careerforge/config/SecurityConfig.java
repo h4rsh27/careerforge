@@ -65,26 +65,35 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Student endpoints
-                        .requestMatchers(
-                                "/api/users/me",
-                                "/api/profile/**",
-                                "/api/skills/**",
-                                "/api/resume/**",
-                                "/api/skill-gap/**",
-                                "/api/career-readiness/**",
-                                "/api/learning-roadmap/**",
-                                "/api/job-recommendations/**",
-                                "/api/interviews/**",
-                                "/api/applications/**"
-                        ).hasRole("STUDENT")
+                                .requestMatchers(
+                                        "/api/users/me",
+                                        "/api/profile/**",
+                                        "/api/skills/**",
+                                        "/api/resume/**",
+                                        "/api/skill-gap/**",
+                                        "/api/career-readiness/**",
+                                        "/api/learning-roadmap/**",
+                                        "/api/job-recommendations/**",
+                                        "/api/interviews/**",
+                                        "/api/applications/**",
+                                        "/api/ai/**"
+                                ).hasRole("STUDENT")
 
                         // Admin endpoints
-                        .requestMatchers(
-                                "/api/admin/**",
-                                "/api/companies/**",
-                                "/api/job-roles/**",
-                                "/api/job-listings/**"
-                        ).hasRole("ADMIN")
+                                // Job roles can be viewed by students,
+// but only admins can create/update/delete them.
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/job-roles/**"
+                                ).hasAnyRole("STUDENT", "ADMIN")
+
+// Admin endpoints
+                                .requestMatchers(
+                                        "/api/admin/**",
+                                        "/api/companies/**",
+                                        "/api/job-roles/**",
+                                        "/api/job-listings/**"
+                                ).hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
