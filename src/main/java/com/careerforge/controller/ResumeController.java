@@ -2,6 +2,8 @@ package com.careerforge.controller;
 
 import com.careerforge.dto.ExtractedSkillResponse;
 import com.careerforge.dto.ResumeResponse;
+import com.careerforge.dto.ResumeAnalysisResponse;
+import com.careerforge.service.ResumeAnalysisService;
 import com.careerforge.dto.ResumeTextResponse;
 import com.careerforge.service.ResumeService;
 import com.careerforge.service.ResumeSkillExtractionService;
@@ -20,14 +22,15 @@ public class ResumeController {
 
     private final ResumeService resumeService;
     private final ResumeSkillExtractionService resumeSkillExtractionService;
-
+    private final ResumeAnalysisService resumeAnalysisService;
     public ResumeController(
             ResumeService resumeService,
-            ResumeSkillExtractionService resumeSkillExtractionService) {
+            ResumeSkillExtractionService resumeSkillExtractionService, ResumeAnalysisService resumeAnalysisService) {
 
         this.resumeService = resumeService;
         this.resumeSkillExtractionService =
                 resumeSkillExtractionService;
+        this.resumeAnalysisService = resumeAnalysisService;
     }
 
     @PostMapping(
@@ -44,7 +47,14 @@ public class ResumeController {
                 file
         );
     }
+    @PostMapping("/analyze")
+    public ResumeAnalysisResponse analyzeResume(
+            Authentication authentication) {
 
+        return resumeAnalysisService.analyzeResume(
+                authentication.getName()
+        );
+    }
     @GetMapping
     public ResumeResponse getResume(
             Authentication authentication) {
